@@ -1,6 +1,8 @@
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 from dotenv import load_dotenv
+from datetime import date
+from collections import defaultdict
 import httpx
 import os
 
@@ -10,6 +12,32 @@ app = Flask(__name__)
 CORS(app)
 
 GAPGPT_API_KEY = os.getenv("GAPGPT_API_KEY")
+
+DAILY_MESSAGE_LIMIT = 20
+
+usage = defaultdict(lambda: {"date": str(date.today()), "count": 0})
+
+
+def get_client_id():
+    forwarded_for = request.headers.get("X-Forwarded-For")
+    if forwarded_for:
+        return forwarded_for.split(",")[0].strip()
+
+    return request.remote_addr or "unknown"
+
+
+def is_rate_limited(client_id):
+    today = str(date.today())
+
+    if usage[client_id]["date"] != today:
+        usage[client_id] = {"date": today, "count": 0}
+
+    if usage[client_id]["count"] >= DAILY_MESSAGE_LIMIT:
+        return True
+
+    usage[client_id]["count"] += 1
+    return False
+
 
 MIDWATCH_PROMPT = """
 You are Midwatch — a movie and TV show companion for people actively watching a story.
@@ -265,9 +293,11 @@ Reply in the same language the user used unless they ask otherwise.
 If the user casually mixes Persian and English, the assistant may naturally do the same.
 """
 
+
 @app.route("/")
 def home():
     return render_template("index.html")
+
 
 @app.route("/chat", methods=["POST"])
 def chat():
@@ -275,16 +305,32 @@ def chat():
         if not GAPGPT_API_KEY:
             return jsonify({"error": "Missing GAPGPT_API_KEY"}), 500
 
-        body = request.get_json()
+        client_id = get_client_id()
+
+        if is_rate_limited(client_id):
+            return jsonify({
+                "reply": "You’ve reached today’s free message limit. Come back tomorrow ✨"
+            }), 429
+
+        body = request.get_json() or {}
         messages = body.get("messages", [])
 
-        conversation_messages = [
-            {
-                "role": "user" if m["role"] == "user" else "assistant",
-                "content": m["text"],
-            }
-            for m in messages
-        ]
+        if not isinstance(messages, list):
+            return jsonify({"error": "Invalid messages format"}), 400
+
+        conversation_messages = []
+
+        for m in messages:
+            role = m.get("role")
+            text = m.get("text")
+
+            if not text:
+                continue
+
+            conversation_messages.append({
+                "role": "user" if role == "user" else "assistant",
+                "content": text,
+            })
 
         payload = {
             "model": "gpt-5.2",
@@ -324,4 +370,3 @@ def chat():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
-    
