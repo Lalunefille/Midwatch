@@ -10,15 +10,20 @@
       box-sizing: border-box;
     }
 
+    html,
     body {
       margin: 0;
-      min-height: 100vh;
+      height: 100%;
+      overflow: hidden;
       font-family: Inter, system-ui, sans-serif;
       color: #f8fafc;
       background:
         radial-gradient(circle at top left, rgba(99,102,241,0.25), transparent 35%),
         radial-gradient(circle at bottom right, rgba(244,114,182,0.14), transparent 35%),
         #09090b;
+    }
+
+    body {
       display: flex;
       justify-content: center;
       padding: 28px 16px;
@@ -27,12 +32,14 @@
     .app {
       width: 100%;
       max-width: 820px;
-      min-height: calc(100vh - 56px);
+      height: calc(100vh - 56px);
       display: flex;
       flex-direction: column;
+      overflow: hidden;
     }
 
     .header {
+      flex: 0 0 auto;
       margin-bottom: 22px;
     }
 
@@ -49,7 +56,7 @@
 
     h1 {
       margin: 0;
-      font-size: clamp(44px, 7vw, 72px);
+      font-size: clamp(40px, 7vw, 72px);
       letter-spacing: -0.06em;
       line-height: 0.95;
     }
@@ -60,8 +67,30 @@
       font-size: 18px;
     }
 
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 18px;
+    }
+
+    .chip {
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.05);
+      color: #d4d4d8;
+      padding: 8px 11px;
+      border-radius: 999px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .chip:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
     .chat-card {
       flex: 1;
+      min-height: 0;
       display: flex;
       flex-direction: column;
       border: 1px solid rgba(255,255,255,0.1);
@@ -74,12 +103,23 @@
 
     .messages {
       flex: 1;
+      min-height: 0;
       padding: 24px;
       display: flex;
       flex-direction: column;
       gap: 14px;
       overflow-y: auto;
-      min-height: 420px;
+      overscroll-behavior: contain;
+      scroll-behavior: smooth;
+    }
+
+    .messages::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .messages::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.18);
+      border-radius: 999px;
     }
 
     .message {
@@ -107,13 +147,14 @@
     }
 
     .typing {
-      padding: 0 24px 14px;
+      flex: 0 0 28px;
+      padding: 0 24px;
       color: #a1a1aa;
       font-size: 14px;
-      height: 28px;
     }
 
     .composer {
+      flex: 0 0 auto;
       display: flex;
       gap: 12px;
       padding: 18px;
@@ -123,6 +164,7 @@
 
     input {
       flex: 1;
+      min-width: 0;
       background: #09090b;
       border: 1px solid rgba(255,255,255,0.12);
       color: white;
@@ -146,36 +188,32 @@
       font-size: 15px;
       background: #f8fafc;
       color: #09090b;
+      transition: transform 0.15s ease;
     }
 
     button:hover {
       transform: translateY(-1px);
     }
 
-    .chips {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 18px;
-    }
-
-    .chip {
-      border: 1px solid rgba(255,255,255,0.1);
-      background: rgba(255,255,255,0.05);
-      color: #d4d4d8;
-      padding: 8px 11px;
-      border-radius: 999px;
-      font-size: 13px;
-      cursor: pointer;
-    }
-
-    .chip:hover {
-      background: rgba(255,255,255,0.1);
-    }
-
     @media (max-width: 640px) {
       body {
-        padding: 16px;
+        padding: 14px;
+      }
+
+      .app {
+        height: calc(100vh - 28px);
+      }
+
+      .header {
+        margin-bottom: 14px;
+      }
+
+      .subtitle {
+        font-size: 15px;
+      }
+
+      .chips {
+        margin-top: 14px;
       }
 
       .message {
