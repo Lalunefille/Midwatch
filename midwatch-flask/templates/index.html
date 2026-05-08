@@ -43,6 +43,13 @@
       margin-bottom: 22px;
     }
 
+    .top-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+    }
+
     .badge {
       display: inline-block;
       padding: 7px 12px;
@@ -52,6 +59,29 @@
       background: rgba(255,255,255,0.04);
       font-size: 13px;
       margin-bottom: 14px;
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .ghost-button {
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.05);
+      color: #d4d4d8;
+      padding: 8px 11px;
+      border-radius: 999px;
+      font-size: 13px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .ghost-button:hover {
+      background: rgba(255,255,255,0.1);
+      transform: translateY(-1px);
     }
 
     h1 {
@@ -179,7 +209,7 @@
       box-shadow: 0 0 0 4px rgba(167,139,250,0.12);
     }
 
-    button {
+    .send-button {
       border: none;
       border-radius: 18px;
       padding: 0 24px;
@@ -188,11 +218,17 @@
       font-size: 15px;
       background: #f8fafc;
       color: #09090b;
-      transition: transform 0.15s ease;
+      transition: transform 0.15s ease, opacity 0.15s ease;
     }
 
-    button:hover {
+    .send-button:hover {
       transform: translateY(-1px);
+    }
+
+    .send-button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
     }
 
     @media (max-width: 640px) {
@@ -206,6 +242,14 @@
 
       .header {
         margin-bottom: 14px;
+      }
+
+      .top-row {
+        flex-direction: column;
+      }
+
+      .actions {
+        justify-content: flex-start;
       }
 
       .subtitle {
@@ -224,7 +268,7 @@
         flex-direction: column;
       }
 
-      button {
+      .send-button {
         padding: 14px;
       }
     }
@@ -234,8 +278,18 @@
 <body>
   <main class="app">
     <section class="header">
-      <div class="badge">spoiler-aware movie night companion</div>
-      <h1>Midwatch</h1>
+      <div class="top-row">
+        <div>
+          <div class="badge">spoiler-aware movie night companion</div>
+          <h1>Midwatch</h1>
+        </div>
+
+        <div class="actions">
+          <button class="ghost-button" onclick="newChat()">New chat</button>
+          <button class="ghost-button" onclick="clearHistory()">Clear history</button>
+        </div>
+      </div>
+
       <div class="subtitle">
         For when you pause the episode and need to talk.
       </div>
@@ -248,11 +302,7 @@
     </section>
 
     <section class="chat-card">
-      <div id="messages" class="messages">
-        <div class="message midwatch">
-          okay first of all what are we watching 👀
-        </div>
-      </div>
+      <div id="messages" class="messages"></div>
 
       <div id="typing" class="typing"></div>
 
@@ -263,7 +313,7 @@
           placeholder="Suits, season 6... is everyone okay or is it just me?"
         />
 
-        <button onclick="sendMessage()">Send</button>
+        <button id="sendButton" class="send-button" onclick="sendMessage()">Send</button>
       </div>
     </section>
   </main>
@@ -272,20 +322,62 @@
     const messagesContainer = document.getElementById("messages");
     const input = document.getElementById("messageInput");
     const typing = document.getElementById("typing");
+    const sendButton = document.getElementById("sendButton");
 
-    let messages = [
+    const STORAGE_KEY = "midwatch_chat_history";
+
+    const starterMessages = [
       {
         role: "midwatch",
         text: "okay first of all what are we watching 👀"
       }
     ];
 
-    function addMessage(role, text) {
-      const div = document.createElement("div");
-      div.className = `message ${role}`;
-      div.textContent = text;
-      messagesContainer.appendChild(div);
+    let messages = loadMessages();
+    let isSending = false;
+
+    function loadMessages() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+
+      if (!saved) {
+        return [...starterMessages];
+      }
+
+      try {
+        const parsed = JSON.parse(saved);
+
+        if (!Array.isArray(parsed) || parsed.length === 0) {
+          return [...starterMessages];
+        }
+
+        return parsed;
+      } catch (err) {
+        console.error("Could not load saved chat:", err);
+        return [...starterMessages];
+      }
+    }
+
+    function saveMessages() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
+    }
+
+    function renderMessages() {
+      messagesContainer.innerHTML = "";
+
+      messages.forEach((message) => {
+        const div = document.createElement("div");
+        div.className = `message ${message.role}`;
+        div.textContent = message.text;
+        messagesContainer.appendChild(div);
+      });
+
       messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    function addMessage(role, text) {
+      messages.push({ role, text });
+      saveMessages();
+      renderMessages();
     }
 
     function quickAsk(text) {
@@ -293,11 +385,35 @@
       input.focus();
     }
 
+    function newChat() {
+      messages = [...starterMessages];
+      saveMessages();
+      typing.textContent = "";
+      input.value = "";
+      renderMessages();
+      input.focus();
+    }
+
+    function clearHistory() {
+      const confirmed = confirm("Clear this chat history?");
+      if (!confirmed) return;
+
+      localStorage.removeItem(STORAGE_KEY);
+      messages = [...starterMessages];
+      typing.textContent = "";
+      input.value = "";
+      renderMessages();
+      input.focus();
+    }
+
     async function sendMessage() {
       const text = input.value.trim();
-      if (!text) return;
 
-      messages.push({ role: "user", text });
+      if (!text || isSending) return;
+
+      isSending = true;
+      sendButton.disabled = true;
+
       addMessage("user", text);
 
       input.value = "";
@@ -314,19 +430,24 @@
         typing.textContent = "";
 
         const reply = data.reply || "okay wait something broke";
-        messages.push({ role: "midwatch", text: reply });
         addMessage("midwatch", reply);
 
       } catch (err) {
         typing.textContent = "";
         addMessage("midwatch", "Midwatch is having trouble reaching the AI service right now.");
         console.error(err);
+      } finally {
+        isSending = false;
+        sendButton.disabled = false;
+        input.focus();
       }
     }
 
     input.addEventListener("keydown", (e) => {
       if (e.key === "Enter") sendMessage();
     });
+
+    renderMessages();
   </script>
 </body>
 </html>
