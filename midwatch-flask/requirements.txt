@@ -2,3 +2,4 @@ flask
 flask-cors
 httpx
 python-dotenv
+gunicorn
