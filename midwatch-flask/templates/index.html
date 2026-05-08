@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
   <title>Midwatch</title>
 
   <style>
@@ -13,126 +12,223 @@
 
     body {
       margin: 0;
-      background: #09090b;
-      color: white;
-      font-family: Inter, sans-serif;
+      min-height: 100vh;
+      font-family: Inter, system-ui, sans-serif;
+      color: #f8fafc;
+      background:
+        radial-gradient(circle at top left, rgba(99,102,241,0.25), transparent 35%),
+        radial-gradient(circle at bottom right, rgba(244,114,182,0.14), transparent 35%),
+        #09090b;
       display: flex;
       justify-content: center;
-      padding: 32px 16px;
+      padding: 28px 16px;
     }
 
-    .container {
+    .app {
       width: 100%;
-      max-width: 720px;
+      max-width: 820px;
+      min-height: calc(100vh - 56px);
       display: flex;
       flex-direction: column;
-      min-height: 100vh;
+    }
+
+    .header {
+      margin-bottom: 22px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 7px 12px;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 999px;
+      color: #c4b5fd;
+      background: rgba(255,255,255,0.04);
+      font-size: 13px;
+      margin-bottom: 14px;
     }
 
     h1 {
-      font-size: 42px;
-      margin-bottom: 8px;
+      margin: 0;
+      font-size: clamp(44px, 7vw, 72px);
+      letter-spacing: -0.06em;
+      line-height: 0.95;
     }
 
     .subtitle {
+      margin-top: 14px;
       color: #a1a1aa;
-      margin-bottom: 32px;
+      font-size: 18px;
+    }
+
+    .chat-card {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 32px;
+      background: rgba(9,9,11,0.72);
+      backdrop-filter: blur(18px);
+      box-shadow: 0 30px 90px rgba(0,0,0,0.45);
+      overflow: hidden;
     }
 
     .messages {
       flex: 1;
+      padding: 24px;
       display: flex;
       flex-direction: column;
-      gap: 16px;
-      margin-bottom: 24px;
+      gap: 14px;
+      overflow-y: auto;
+      min-height: 420px;
     }
 
     .message {
-      max-width: 80%;
-      padding: 16px 20px;
-      border-radius: 24px;
-      line-height: 1.5;
+      max-width: 78%;
+      padding: 14px 18px;
+      border-radius: 22px;
+      line-height: 1.55;
       white-space: pre-wrap;
+      font-size: 15.5px;
     }
 
     .user {
       align-self: flex-end;
-      background: #4f46e5;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: white;
+      border-bottom-right-radius: 7px;
     }
 
     .midwatch {
       align-self: flex-start;
-      background: #18181b;
-      border: 1px solid #27272a;
+      background: rgba(39,39,42,0.9);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: #f4f4f5;
+      border-bottom-left-radius: 7px;
     }
 
-    .input-row {
+    .typing {
+      padding: 0 24px 14px;
+      color: #a1a1aa;
+      font-size: 14px;
+      height: 28px;
+    }
+
+    .composer {
       display: flex;
       gap: 12px;
+      padding: 18px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      background: rgba(24,24,27,0.7);
     }
 
     input {
       flex: 1;
-      background: #18181b;
-      border: 1px solid #27272a;
+      background: #09090b;
+      border: 1px solid rgba(255,255,255,0.12);
       color: white;
-      padding: 16px;
+      padding: 16px 18px;
       border-radius: 18px;
       outline: none;
-      font-size: 16px;
+      font-size: 15px;
+    }
+
+    input:focus {
+      border-color: rgba(167,139,250,0.8);
+      box-shadow: 0 0 0 4px rgba(167,139,250,0.12);
     }
 
     button {
-      background: white;
-      color: black;
       border: none;
       border-radius: 18px;
       padding: 0 24px;
       cursor: pointer;
-      font-weight: 600;
+      font-weight: 700;
       font-size: 15px;
+      background: #f8fafc;
+      color: #09090b;
     }
 
     button:hover {
-      opacity: 0.9;
+      transform: translateY(-1px);
     }
 
-    .typing {
-      color: #a1a1aa;
-      font-size: 14px;
-      margin-top: 4px;
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 18px;
+    }
+
+    .chip {
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.05);
+      color: #d4d4d8;
+      padding: 8px 11px;
+      border-radius: 999px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .chip:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    @media (max-width: 640px) {
+      body {
+        padding: 16px;
+      }
+
+      .message {
+        max-width: 90%;
+      }
+
+      .composer {
+        flex-direction: column;
+      }
+
+      button {
+        padding: 14px;
+      }
     }
   </style>
 </head>
 
 <body>
-  <div class="container">
-    <h1>Midwatch</h1>
-
-    <div class="subtitle">
-      For when you pause the episode and need to talk.
-    </div>
-
-    <div id="messages" class="messages">
-      <div class="message midwatch">
-        okay first of all what are we watching 👀
+  <main class="app">
+    <section class="header">
+      <div class="badge">spoiler-aware movie night companion</div>
+      <h1>Midwatch</h1>
+      <div class="subtitle">
+        For when you pause the episode and need to talk.
       </div>
-    </div>
 
-    <div class="input-row">
-      <input
-        id="messageInput"
-        type="text"
-        placeholder="is this man lying or am i paranoid"
-      />
+      <div class="chips">
+        <div class="chip" onclick="quickAsk('is this man lying or am i paranoid')">is this man lying?</div>
+        <div class="chip" onclick="quickAsk('did i miss something or is this supposed to be unclear?')">did i miss something?</div>
+        <div class="chip" onclick="quickAsk('recommend something for rainy-night emotional damage')">rainy-night recs</div>
+      </div>
+    </section>
 
-      <button onclick="sendMessage()">
-        Send
-      </button>
-    </div>
+    <section class="chat-card">
+      <div id="messages" class="messages">
+        <div class="message midwatch">
+          okay first of all what are we watching 👀
+        </div>
+      </div>
 
-    <div id="typing" class="typing"></div>
-  </div>
+      <div id="typing" class="typing"></div>
+
+      <div class="composer">
+        <input
+          id="messageInput"
+          type="text"
+          placeholder="Suits, season 6... is everyone okay or is it just me?"
+        />
+
+        <button onclick="sendMessage()">Send</button>
+      </div>
+    </section>
+  </main>
 
   <script>
     const messagesContainer = document.getElementById("messages");
@@ -148,72 +244,50 @@
 
     function addMessage(role, text) {
       const div = document.createElement("div");
-
       div.className = `message ${role}`;
       div.textContent = text;
-
       messagesContainer.appendChild(div);
-
       messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    function quickAsk(text) {
+      input.value = text;
+      input.focus();
     }
 
     async function sendMessage() {
       const text = input.value.trim();
-
       if (!text) return;
 
-      messages.push({
-        role: "user",
-        text
-      });
-
+      messages.push({ role: "user", text });
       addMessage("user", text);
 
       input.value = "";
-
-      typing.textContent = "midwatch is typing...";
+      typing.textContent = "Midwatch is typing...";
 
       try {
         const response = await fetch("/chat", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            messages
-          })
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ messages })
         });
 
         const data = await response.json();
-
         typing.textContent = "";
 
-        const reply =
-          data.reply || "okay wait something broke 😭";
-
-        messages.push({
-          role: "midwatch",
-          text: reply
-        });
-
+        const reply = data.reply || "okay wait something broke";
+        messages.push({ role: "midwatch", text: reply });
         addMessage("midwatch", reply);
 
       } catch (err) {
         typing.textContent = "";
-
-        addMessage(
-          "midwatch",
-          "okay the AI service is fighting me right now 😭"
-        );
-
+        addMessage("midwatch", "Midwatch is having trouble reaching the AI service right now.");
         console.error(err);
       }
     }
 
     input.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") {
-        sendMessage();
-      }
+      if (e.key === "Enter") sendMessage();
     });
   </script>
 </body>
