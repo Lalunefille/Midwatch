@@ -1,0 +1,222 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Midwatch</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: #09090b;
+      color: white;
+      font-family: Inter, sans-serif;
+      display: flex;
+      justify-content: center;
+      padding: 32px 16px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 720px;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    h1 {
+      font-size: 42px;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      color: #a1a1aa;
+      margin-bottom: 32px;
+    }
+
+    .messages {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .message {
+      max-width: 80%;
+      padding: 16px 20px;
+      border-radius: 24px;
+      line-height: 1.5;
+      white-space: pre-wrap;
+    }
+
+    .user {
+      align-self: flex-end;
+      background: #4f46e5;
+    }
+
+    .midwatch {
+      align-self: flex-start;
+      background: #18181b;
+      border: 1px solid #27272a;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 12px;
+    }
+
+    input {
+      flex: 1;
+      background: #18181b;
+      border: 1px solid #27272a;
+      color: white;
+      padding: 16px;
+      border-radius: 18px;
+      outline: none;
+      font-size: 16px;
+    }
+
+    button {
+      background: white;
+      color: black;
+      border: none;
+      border-radius: 18px;
+      padding: 0 24px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 15px;
+    }
+
+    button:hover {
+      opacity: 0.9;
+    }
+
+    .typing {
+      color: #a1a1aa;
+      font-size: 14px;
+      margin-top: 4px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>Midwatch</h1>
+
+    <div class="subtitle">
+      For when you pause the episode and need to talk.
+    </div>
+
+    <div id="messages" class="messages">
+      <div class="message midwatch">
+        okay first of all what are we watching 👀
+      </div>
+    </div>
+
+    <div class="input-row">
+      <input
+        id="messageInput"
+        type="text"
+        placeholder="is this man lying or am i paranoid"
+      />
+
+      <button onclick="sendMessage()">
+        Send
+      </button>
+    </div>
+
+    <div id="typing" class="typing"></div>
+  </div>
+
+  <script>
+    const messagesContainer = document.getElementById("messages");
+    const input = document.getElementById("messageInput");
+    const typing = document.getElementById("typing");
+
+    let messages = [
+      {
+        role: "midwatch",
+        text: "okay first of all what are we watching 👀"
+      }
+    ];
+
+    function addMessage(role, text) {
+      const div = document.createElement("div");
+
+      div.className = `message ${role}`;
+      div.textContent = text;
+
+      messagesContainer.appendChild(div);
+
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    async function sendMessage() {
+      const text = input.value.trim();
+
+      if (!text) return;
+
+      messages.push({
+        role: "user",
+        text
+      });
+
+      addMessage("user", text);
+
+      input.value = "";
+
+      typing.textContent = "midwatch is typing...";
+
+      try {
+        const response = await fetch("/chat", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            messages
+          })
+        });
+
+        const data = await response.json();
+
+        typing.textContent = "";
+
+        const reply =
+          data.reply || "okay wait something broke 😭";
+
+        messages.push({
+          role: "midwatch",
+          text: reply
+        });
+
+        addMessage("midwatch", reply);
+
+      } catch (err) {
+        typing.textContent = "";
+
+        addMessage(
+          "midwatch",
+          "okay the AI service is fighting me right now 😭"
+        );
+
+        console.error(err);
+      }
+    }
+
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        sendMessage();
+      }
+    });
+  </script>
+</body>
+</html>
+```
