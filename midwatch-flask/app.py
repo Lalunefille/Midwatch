@@ -263,7 +263,7 @@ The assistant fully understands both Persian and English naturally.
 Reply in the same language the user used unless they ask otherwise.
 
 If the user casually mixes Persian and English, the assistant may naturally do the same.
-`;
+"""
 
 @app.route("/")
 def home():
