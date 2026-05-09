@@ -2,23 +2,15 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
-  />
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Midwatch</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
 
   <style>
-    * {
-      -webkit-tap-highlight-color: transparent;
-    }
+    * { -webkit-tap-highlight-color: transparent; }
 
-    html,
-    body {
+    html, body {
       height: 100%;
       overflow: hidden;
       background: #09090b;
@@ -45,17 +37,17 @@
       height: 0;
     }
 
-    input {
+    textarea {
       direction: auto;
       unicode-bidi: plaintext;
       text-align: start;
+      resize: none;
+      max-height: 140px;
     }
   </style>
 </head>
 
-<body
-  class="min-h-screen bg-zinc-950 text-white"
->
+<body class="min-h-screen bg-zinc-950 text-white">
   <div
     class="fixed inset-0 -z-10 bg-[radial-gradient(circle_at_top_left,rgba(99,102,241,0.25),transparent_35%),radial-gradient(circle_at_bottom_right,rgba(244,114,182,0.12),transparent_35%)]"
   ></div>
@@ -64,15 +56,11 @@
     class="mx-auto flex h-[100dvh] w-full max-w-[860px] flex-col px-3 pt-[max(16px,env(safe-area-inset-top))] pb-[max(12px,env(safe-area-inset-bottom))] sm:px-4"
   >
     <section class="shrink-0 pb-3">
-      <div
-        class="mb-3 inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-violet-300"
-      >
+      <div class="mb-3 inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-violet-300">
         spoiler-aware movie night companion
       </div>
 
-      <h1
-        class="text-[clamp(44px,12vw,72px)] font-bold leading-[0.92] tracking-[-0.07em]"
-      >
+      <h1 class="text-[clamp(44px,12vw,72px)] font-bold leading-[0.92] tracking-[-0.07em]">
         Midwatch
       </h1>
 
@@ -81,71 +69,54 @@
       </div>
 
       <div class="mt-4 flex flex-wrap gap-2">
-        <button
-          onclick="newChat()"
-          class="rounded-full border border-white/10 bg-white/5 px-3.5 py-2 text-sm font-medium text-zinc-200 hover:bg-white/10"
-        >
+        <button onclick="newChat()" class="rounded-full border border-white/10 bg-white/5 px-3.5 py-2 text-sm font-medium text-zinc-200 hover:bg-white/10">
           New chat
         </button>
 
-        <button
-          onclick="clearHistory()"
-          class="rounded-full border border-white/10 bg-white/5 px-3.5 py-2 text-sm font-medium text-zinc-200 hover:bg-white/10"
-        >
+        <button onclick="clearHistory()" class="rounded-full border border-white/10 bg-white/5 px-3.5 py-2 text-sm font-medium text-zinc-200 hover:bg-white/10">
           Clear history
+        </button>
+
+        <button onclick="exportChat()" class="rounded-full border border-white/10 bg-white/5 px-3.5 py-2 text-sm font-medium text-zinc-200 hover:bg-white/10">
+          Export
         </button>
       </div>
 
       <div class="mt-4 flex flex-wrap gap-2">
-        <button
-          onclick="quickAsk('is this man lying or am i paranoid')"
-          class="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs text-zinc-300 hover:bg-white/10"
-        >
+        <button onclick="quickAsk('is this man lying or am i paranoid')" class="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs text-zinc-300 hover:bg-white/10">
           is this man lying?
         </button>
 
-        <button
-          onclick="quickAsk('did i miss something or is this supposed to be unclear?')"
-          class="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs text-zinc-300 hover:bg-white/10"
-        >
+        <button onclick="quickAsk('did i miss something or is this supposed to be unclear?')" class="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs text-zinc-300 hover:bg-white/10">
           did i miss something?
         </button>
 
-        <button
-          onclick="quickAsk('recommend something for rainy-night emotional damage')"
-          class="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs text-zinc-300 hover:bg-white/10"
-        >
+        <button onclick="quickAsk('recommend something for rainy-night emotional damage')" class="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs text-zinc-300 hover:bg-white/10">
           rainy-night recs
         </button>
       </div>
     </section>
 
-    <section
-      class="flex min-h-0 flex-1 flex-col overflow-hidden rounded-[28px] border border-white/10 bg-zinc-950/70 backdrop-blur-xl"
-    >
+    <section class="flex min-h-0 flex-1 flex-col overflow-hidden rounded-[28px] border border-white/10 bg-zinc-950/70 backdrop-blur-xl">
       <div
         id="messages"
         class="messages-scroll flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-3.5 sm:p-4"
       ></div>
 
-      <div
-        id="typing"
-        class="min-h-[24px] px-4 pb-2 text-xs text-zinc-400"
-      ></div>
+      <div id="typing" class="min-h-[24px] px-4 pb-2 text-xs text-zinc-400"></div>
 
-      <div
-        class="flex gap-2.5 border-t border-white/10 bg-zinc-900/90 p-2.5 sm:p-3"
-      >
-        <input
+      <div class="flex items-end gap-2.5 border-t border-white/10 bg-zinc-900/90 p-2.5 sm:p-3">
+        <textarea
           id="messageInput"
-          type="text"
+          rows="1"
           placeholder="Suits, season 6..."
           class="min-w-0 flex-1 rounded-[18px] border border-white/10 bg-zinc-950 px-4 py-3.5 text-base text-white outline-none placeholder:text-zinc-500 focus:border-violet-400/70 focus:ring-4 focus:ring-violet-400/10"
-        />
+        ></textarea>
 
         <button
+          id="sendButton"
           onclick="sendMessage()"
-          class="shrink-0 rounded-[18px] bg-zinc-50 px-4 font-bold text-zinc-950 hover:bg-white"
+          class="shrink-0 rounded-[18px] bg-zinc-50 px-4 py-3.5 font-bold text-zinc-950 hover:bg-white disabled:cursor-not-allowed disabled:opacity-40"
         >
           Send
         </button>
@@ -157,20 +128,23 @@
     const messagesContainer = document.getElementById("messages");
     const input = document.getElementById("messageInput");
     const typing = document.getElementById("typing");
+    const sendButton = document.getElementById("sendButton");
+
+    const STORAGE_KEY = "midwatchMessages";
 
     const starterMessage = {
       role: "midwatch",
-      text: "okay first of all what are we watching 👀"
+      text: "okay first of all what are we watching 👀",
+      timestamp: new Date().toISOString()
     };
 
+    let isLoading = false;
     let messages = loadMessages();
 
     function loadMessages() {
-      const saved = localStorage.getItem("midwatchMessages");
+      const saved = localStorage.getItem(STORAGE_KEY);
 
-      if (!saved) {
-        return [starterMessage];
-      }
+      if (!saved) return [starterMessage];
 
       try {
         const parsed = JSON.parse(saved);
@@ -179,14 +153,17 @@
           return [starterMessage];
         }
 
-        return parsed;
+        return parsed.map((message) => ({
+          ...message,
+          timestamp: message.timestamp || new Date().toISOString()
+        }));
       } catch {
         return [starterMessage];
       }
     }
 
     function saveMessages() {
-      localStorage.setItem("midwatchMessages", JSON.stringify(messages));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
     }
 
     function isMostlyPersian(text) {
@@ -196,14 +173,29 @@
       return persianMatches.length > latinMatches.length;
     }
 
+    function formatTime(timestamp) {
+      try {
+        return new Intl.DateTimeFormat([], {
+          hour: "2-digit",
+          minute: "2-digit"
+        }).format(new Date(timestamp));
+      } catch {
+        return "";
+      }
+    }
+
     function renderMessages() {
       messagesContainer.innerHTML = "";
 
       messages.forEach((message) => {
+        const wrapper = document.createElement("div");
+        wrapper.className =
+          message.role === "user"
+            ? "flex flex-col items-end"
+            : "flex flex-col items-start";
+
         const div = document.createElement("div");
-
         const directionClass = isMostlyPersian(message.text) ? "rtl" : "ltr";
-
         div.dir = directionClass === "rtl" ? "rtl" : "ltr";
 
         div.className = [
@@ -216,48 +208,105 @@
           "text-[15px]",
           "leading-relaxed",
           message.role === "user"
-            ? "self-end rounded-br-lg bg-gradient-to-br from-indigo-500 to-violet-500 text-white"
-            : "self-start rounded-bl-lg border border-white/10 bg-zinc-800/90 text-zinc-100"
+            ? "rounded-br-lg bg-gradient-to-br from-indigo-500 to-violet-500 text-white"
+            : "rounded-bl-lg border border-white/10 bg-zinc-800/90 text-zinc-100"
         ].join(" ");
 
         div.textContent = message.text;
 
-        messagesContainer.appendChild(div);
+        const time = document.createElement("div");
+        time.className =
+          message.role === "user"
+            ? "mt-1 px-2 text-[11px] text-zinc-500"
+            : "mt-1 px-2 text-[11px] text-zinc-500";
+
+        time.textContent = formatTime(message.timestamp);
+
+        wrapper.appendChild(div);
+        wrapper.appendChild(time);
+        messagesContainer.appendChild(wrapper);
       });
 
       messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }
 
     function addMessage(role, text) {
-      messages.push({ role, text });
+      messages.push({
+        role,
+        text,
+        timestamp: new Date().toISOString()
+      });
+
       saveMessages();
       renderMessages();
     }
 
+    function setLoading(value) {
+      isLoading = value;
+      sendButton.disabled = value;
+      input.disabled = value;
+      typing.textContent = value ? "Midwatch is typing..." : "";
+    }
+
+    function autoResizeTextarea() {
+      input.style.height = "auto";
+      input.style.height = Math.min(input.scrollHeight, 140) + "px";
+    }
+
     function newChat() {
-      messages = [starterMessage];
+      messages = [
+        {
+          role: "midwatch",
+          text: "okay first of all what are we watching 👀",
+          timestamp: new Date().toISOString()
+        }
+      ];
+
       saveMessages();
       renderMessages();
       input.value = "";
-      typing.textContent = "";
+      autoResizeTextarea();
+      setLoading(false);
       input.focus();
     }
 
     function clearHistory() {
-      localStorage.removeItem("midwatchMessages");
-      messages = [starterMessage];
-      renderMessages();
-      input.value = "";
-      typing.textContent = "";
-      input.focus();
+      localStorage.removeItem(STORAGE_KEY);
+      newChat();
     }
 
     function quickAsk(text) {
       input.value = text;
+      autoResizeTextarea();
       input.focus();
     }
 
+    function exportChat() {
+      const content = messages
+        .map((message) => {
+          const speaker = message.role === "user" ? "You" : "Midwatch";
+          const time = formatTime(message.timestamp);
+          return `[${time}] ${speaker}: ${message.text}`;
+        })
+        .join("\n\n");
+
+      const blob = new Blob([content], {
+        type: "text/plain;charset=utf-8"
+      });
+
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "midwatch-chat.txt";
+      a.click();
+
+      URL.revokeObjectURL(url);
+    }
+
     async function sendMessage() {
+      if (isLoading) return;
+
       const text = input.value.trim();
 
       if (!text) return;
@@ -265,7 +314,8 @@
       addMessage("user", text);
 
       input.value = "";
-      typing.textContent = "Midwatch is typing...";
+      autoResizeTextarea();
+      setLoading(true);
 
       try {
         const response = await fetch("/chat", {
@@ -280,31 +330,37 @@
 
         const data = await response.json();
 
-        typing.textContent = "";
+        if (!response.ok) {
+          throw new Error(data.error || "Request failed");
+        }
 
         addMessage(
           "midwatch",
           data.reply || "okay wait something broke"
         );
       } catch (err) {
-        typing.textContent = "";
-
         addMessage(
           "midwatch",
           "Midwatch is having trouble reaching the AI service right now."
         );
 
         console.error(err);
+      } finally {
+        setLoading(false);
       }
     }
 
+    input.addEventListener("input", autoResizeTextarea);
+
     input.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
         sendMessage();
       }
     });
 
     renderMessages();
+    autoResizeTextarea();
   </script>
 </body>
 </html>
